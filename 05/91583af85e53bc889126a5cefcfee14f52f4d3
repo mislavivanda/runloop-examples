@@ -1,0 +1,38 @@
+transitions/runloop-to-daytona/README.md
+  s_af2e5bd4fb403f::t_a5abe91f3eb263 21
+  s_af2e5bd4fb403f::t_ca222d1e597906 39
+  s_af2e5bd4fb403f::t_f84e7172448561 41
+transitions/runloop-to-daytona/compare_core_public.py
+  s_af2e5bd4fb403f::t_21eaf34869e956 152,154-156,161-164,169
+  s_af2e5bd4fb403f::t_b65260b66e1ff3 371
+  s_af2e5bd4fb403f::t_a8001a4ebf76db 128,130-134
+  s_af2e5bd4fb403f::t_d858fbf0e3dcce 199
+transitions/runloop-to-daytona/docs/runloop-to-daytona.mdx
+  s_af2e5bd4fb403f::t_b52f59ae6a2144 44
+transitions/runloop-to-daytona/validation-summary.json
+  s_b0bf8baad51033::t_0c65b606d1f7ec 6-7,12-14,17-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0591583af85e53bc889126a5cefcfee14f52f4d3",
+  "prompts": {},
+  "sessions": {
+    "s_af2e5bd4fb403f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_eca04700effe5ce51CcqrDfpuI",
+        "model": "unknown"
+      },
+      "human_author": "Mislav Ivanda <mislavivanda454@gmail.com>"
+    },
+    "s_b0bf8baad51033": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_eca04700effe5ce51CcqrDfpuI",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Mislav Ivanda <mislavivanda454@gmail.com>"
+    }
+  }
+}
