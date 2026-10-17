@@ -1,0 +1,58 @@
+transitions/runloop-to-daytona/.gitignore
+  s_af2e5bd4fb403f::t_2541d3cae8011f 1-5
+transitions/runloop-to-daytona/README.md
+  s_af2e5bd4fb403f::t_3f63ba04ffd0fa 1-41
+transitions/runloop-to-daytona/requirements.txt
+  s_af2e5bd4fb403f::t_21050b2ef0fde5 1-2
+transitions/runloop-to-daytona/docs/runloop-to-daytona.mdx
+  s_af2e5bd4fb403f::t_b09fb399ae8458 66
+  s_af2e5bd4fb403f::t_b595317a473f88 10
+  s_af2e5bd4fb403f::t_a0f1a58bf18e8e 50
+  s_af2e5bd4fb403f::t_fae8a853dbf9f6 1-9,11-49,51-65,67-92
+transitions/runloop-to-daytona/compare_core_public.py
+  s_af2e5bd4fb403f::t_fbabf9a950ea36 137-138
+  s_af2e5bd4fb403f::t_c6fd7bd2ae4264 5
+  s_af2e5bd4fb403f::t_5c258f1640541c 169
+  s_af2e5bd4fb403f::t_5aaf0412b9fabb 20
+  s_af2e5bd4fb403f::t_a678034506ae5d 1-4,6-19,21-31,33-34,36-107,115-116,119-126,128-136,139-153,159,161-168,170-197,199-217,219-229,231,233,235,246-247,249,251-256,259-283,286,293-294,299-300,302-304,306-339,341-370,372-424
+  s_af2e5bd4fb403f::t_b0f615962b0e20 284-285,287-292,295-298,301,305
+  s_af2e5bd4fb403f::t_d8ef55160f0155 340
+  s_af2e5bd4fb403f::t_2247f9bbb8ae33 218
+  s_af2e5bd4fb403f::t_156ef39e7bc3f9 35
+  s_af2e5bd4fb403f::t_7860efa62928dd 154-158,160
+  s_af2e5bd4fb403f::t_c22c1cc3196e4f 108-114,117-118
+  s_af2e5bd4fb403f::t_13f432ffae422a 127
+  s_af2e5bd4fb403f::t_4822e3ef390929 198
+  s_af2e5bd4fb403f::t_97a957902270c1 32
+  s_af2e5bd4fb403f::t_096b2c4d91c002 230,232,234,236-245,248,257-258
+  s_af2e5bd4fb403f::t_b7859a01e6cb3d 371
+  s_af2e5bd4fb403f::t_bb1df63b3a2923 250
+transitions/runloop-to-daytona/docs/runloop-to-daytona-validation.mdx
+  s_af2e5bd4fb403f::t_488ab68fc39a34 1-55
+transitions/runloop-to-daytona/validation-summary.json
+  s_b0bf8baad51033::t_768c0fadc4a5d2 1-140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d779e5507c5ffa26b55dcc73ae6a9175450a9cfc",
+  "prompts": {},
+  "sessions": {
+    "s_af2e5bd4fb403f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_eca04700effe5ce51CcqrDfpuI",
+        "model": "unknown"
+      },
+      "human_author": "Mislav Ivanda <mislavivanda454@gmail.com>"
+    },
+    "s_b0bf8baad51033": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_eca04700effe5ce51CcqrDfpuI",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Mislav Ivanda <mislavivanda454@gmail.com>"
+    }
+  }
+}
