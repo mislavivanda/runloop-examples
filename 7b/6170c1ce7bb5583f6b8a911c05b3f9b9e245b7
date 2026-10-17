@@ -1,0 +1,25 @@
+transitions/runloop-to-daytona/README.md
+  s_af2e5bd4fb403f::t_99d77007d1fd05 37
+  s_af2e5bd4fb403f::t_4cc9fadb85807c 23
+transitions/runloop-to-daytona/docs/runloop-to-daytona-validation.mdx
+  s_af2e5bd4fb403f::t_cb5d43a08f6cb1 29
+  s_af2e5bd4fb403f::t_cee0e8433610e1 45
+transitions/runloop-to-daytona/docs/runloop-to-daytona.mdx
+  s_af2e5bd4fb403f::t_4b98bcf6507aa5 76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7b6170c1ce7bb5583f6b8a911c05b3f9b9e245b7",
+  "prompts": {},
+  "sessions": {
+    "s_af2e5bd4fb403f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_eca04700effe5ce51CcqrDfpuI",
+        "model": "unknown"
+      },
+      "human_author": "Mislav Ivanda <mislavivanda454@gmail.com>"
+    }
+  }
+}
