@@ -1,0 +1,126 @@
+{
+  "versions": {
+    "runloop-api-client": "2.0.0",
+    "daytona": "0.225.0"
+  },
+  "startedAt": "2026-10-18T17:37:41.963+00:00",
+  "finishedAt": "2026-10-18T17:38:14.760+00:00",
+  "daytonaSnapshot": "daytonaio/sandbox:0.8.0",
+  "cleanup": {
+    "daytonaRestored": "ok",
+    "runloopRestored": "ok",
+    "daytonaSnapshot": "ok",
+    "runloopSnapshot": "ok",
+    "daytonaAllowlisted": "ok",
+    "daytonaBlocked": "ok",
+    "daytona": "ok",
+    "runloop": "ok"
+  },
+  "errors": [],
+  "cases": [
+    {
+      "name": "command exit 0",
+      "pass": true
+    },
+    {
+      "name": "command exit 7",
+      "pass": true
+    },
+    {
+      "name": "output without trailing newline",
+      "pass": true
+    },
+    {
+      "name": "UTF-8 file round trip",
+      "pass": true
+    },
+    {
+      "name": "Daytona process.exec returns stderr in result without a final newline",
+      "pass": true
+    },
+    {
+      "name": "fixture creation",
+      "pass": true
+    },
+    {
+      "name": "binary, large file, mode and symlink manifest",
+      "pass": true
+    },
+    {
+      "name": "Daytona binary SDK read",
+      "pass": true
+    },
+    {
+      "name": "Daytona block-all set at creation denies outbound",
+      "pass": true
+    },
+    {
+      "name": "Daytona domain allow list permits listed host",
+      "pass": true
+    },
+    {
+      "name": "Daytona domain allow list blocks unlisted host",
+      "pass": true
+    },
+    {
+      "name": "Runloop to Daytona file transfer",
+      "pass": true
+    },
+    {
+      "name": "Daytona to Runloop reverse transfer",
+      "pass": true
+    },
+    {
+      "name": "background process running before suspend/stop",
+      "pass": true
+    },
+    {
+      "name": "disk after resume/start",
+      "pass": true
+    },
+    {
+      "name": "background process alive after resume/start",
+      "pass": true
+    },
+    {
+      "name": "restored filesystem manifest",
+      "pass": true
+    }
+  ],
+  "faultInjection": {
+    "case": "Daytona create_snapshot() timed out while the capture was still running",
+    "expectedExit": 2,
+    "errors": [
+      {
+        "stage": "snapshots",
+        "type": "DaytonaTimeoutError"
+      }
+    ],
+    "cleanup": {
+      "daytonaSnapshot": "ok",
+      "runloopSnapshot": "ok",
+      "daytonaAllowlisted": "ok",
+      "daytonaBlocked": "ok",
+      "daytona": "ok",
+      "runloop": "ok"
+    },
+    "captureRunningWhenCallTimedOut": true,
+    "snapshotDeletedAfterCaptureFinished": true,
+    "pass": true
+  },
+  "readinessFaultInjection": {
+    "case": "Exception after Daytona sandbox creation, before create() returned",
+    "expectedExit": 2,
+    "errors": [
+      {
+        "stage": "Daytona creation",
+        "type": "DaytonaTimeoutError"
+      }
+    ],
+    "cleanup": {
+      "daytona": "ok",
+      "runloop": "ok"
+    },
+    "pass": true
+  }
+}

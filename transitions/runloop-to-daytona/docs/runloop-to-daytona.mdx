@@ -1,0 +1,92 @@
+---
+title: "Transition from Runloop to Daytona"
+description: "Plan and validate a migration from Runloop devboxes to Daytona sandboxes"
+---
+
+<Warning>
+  This guide maps published APIs and includes a bounded SDK comparison, not a certified migration. Pin versions, run the [Daytona validation plan](/docs/transitions/runloop-to-daytona-validation) for your workload, and record evidence before cutover.
+</Warning>
+
+Daytona provides isolated sandboxes, including containers and Linux VMs, managed through its SDKs, API, and CLI. Runloop IDs, blueprint definitions, snapshot state, and Axon data do not transfer automatically. Plan application-data export and replacement coordination infrastructure alongside sandbox provisioning.
+
+| Runloop | Daytona | Required work |
+| - | - | - |
+| [Devboxes](/docs/devboxes/overview) | [Sandboxes](https://www.daytona.io/docs/en/sandboxes/) | Replace provisioning, commands, files, network rules, and lifecycle calls. |
+| [Axons](/docs/axons/overview) | Application-owned journal, database, and workers | Implement durable events, replay, subscriptions, turn delivery, and SQL serialization. |
+| [Blueprints](/docs/devboxes/blueprints) | [Snapshots built from images](https://www.daytona.io/docs/en/snapshots/#create-snapshots) | Rebuild environment definitions and reapply runtime settings. |
+| [Snapshots](/docs/devboxes/snapshots) | [Snapshots from a sandbox](https://www.daytona.io/docs/en/snapshots/#create-snapshot-from-sandbox) | Export application state, restore it in a new sandbox, then capture a Daytona snapshot. |
+| Benchmarks (discontinued) | [Harbor with Daytona sandboxes](https://docs.harborframework.com/core-concepts/sandboxes/pre-integrated-sandboxes) | Switch to the Harbor runner and select Daytona as the sandbox provider. |
+
+Daytona uses *snapshot* for both reusable environment templates, which replace blueprints, and captured sandbox state, which replaces Runloop snapshots.
+
+## Runloop customer offer
+
+Runloop customers can receive **\$1,500 in Daytona credits**. Email [support@daytona.io](mailto:support@daytona.io) with the subject "Runloop transition" and your Daytona organization ID, and the Daytona team will add the credits to your organization. Review [limits](https://www.daytona.io/docs/en/limits/) and [billing](https://www.daytona.io/docs/en/billing/) before choosing your migration resources.
+
+## Prepare the transition
+
+1. Create a [Daytona account](https://app.daytona.io), generate an [API key](https://www.daytona.io/docs/en/api-keys/), install the `daytona` Python SDK or `@daytona/sdk` TypeScript SDK, and set `DAYTONA_API_KEY` for SDK processes. Pin SDK and CLI versions.
+2. Inventory devboxes, blueprints, snapshots, mounted and external data, Axon events and [SQL](/docs/axons/sql), Broker integrations, pending work, and evaluation fixtures.
+3. Name an owner and agree recovery objectives. Keep only one authoritative writer at each stage, and retain the source integration during validation.
+4. Check your organization's [tier and limits](https://www.daytona.io/docs/en/limits/). Per-sandbox network rules require Tier 3 or Tier 4.
+5. Run the [Runloop and Daytona comparison starter](https://github.com/runloopai/runloop-examples/blob/main/transitions/runloop-to-daytona/compare_core_public.py). Its extended mode exercises filesystem fixtures, network policies, stop/start, and snapshot restoration; the [validation plan](/docs/transitions/runloop-to-daytona-validation) specifies further acceptance checks.
+
+## Devboxes to sandboxes
+
+Provision with `daytona.create()` from a [snapshot or image](https://www.daytona.io/docs/en/sandboxes/#create-sandboxes). Default sandboxes are containers with 1 vCPU, 1 GiB memory, and 3 GiB disk that run as the `daytona` user in `/home/daytona`; set [custom resources](https://www.daytona.io/docs/en/sandboxes/#resources) within your organization's limits when creating from an image. Record effective resources rather than translating devbox size names. Replace command execution with [session commands](https://www.daytona.io/docs/en/process-code-execution/#session-operations) or `sandbox.process.exec()`, and file operations with [`sandbox.fs`](https://www.daytona.io/docs/en/file-system-operations/).
+
+**Command output compatibility:** In a probe with Runloop Python SDK 2.0.0 and Daytona Python SDK 0.225.0, `process.exec()` returned the exit code and exact output bytes but merged stderr into its single result string. Session commands returned stdout and stderr separately and, like Runloop `cmd.exec()`, ended unterminated output with a newline. Run each session command in a subshell, `(command)`, so an `exit` ends only that command, and set a timeout on every call.
+
+[Runloop named shells](/docs/devboxes/named-shells) preserve directory and environment and serialize calls. Daytona sessions are also persistent shells that keep state between commands and run long-lived processes in the background; verify ordering under concurrent callers. Use [PTY sessions](https://www.daytona.io/docs/en/pty/) for interactive terminals and [SSH access](https://www.daytona.io/docs/en/ssh-access/) for IDE workflows; SSH tokens expire, by default after 60 minutes.
+
+[Runloop suspend/resume](/docs/devboxes/lifecycle) preserves disk and requires process restart. Daytona container sandboxes behave the same way across [stop and start](https://www.daytona.io/docs/en/sandboxes/#stop-sandboxes): the probe confirmed that files, including those in `/tmp`, survive while background processes do not. Stopped container sandboxes [archive](https://www.daytona.io/docs/en/sandboxes/#archive-sandboxes) to object storage after 7 days by default and restore on start. [Linux VM sandboxes](https://www.daytona.io/docs/en/sandboxes/#vm-sandboxes) add [pause and resume](https://www.daytona.io/docs/en/sandboxes/#pause--resume-sandboxes) that keep memory and running processes, plus [forks](https://www.daytona.io/docs/en/sandboxes/#fork-sandboxes). They start from VM snapshots, so confirm one is available to your organization and region, and guard process startup against duplicates after resume.
+
+Translate idle policy deliberately. Daytona [auto-stop](https://www.daytona.io/docs/en/sandboxes/#auto-stop-interval) defaults to 15 minutes, and only lifecycle changes, preview traffic, active SSH connections, and toolbox API calls reset the timer; background processes do not. Set `auto_stop_interval=0` or [signal activity](https://www.daytona.io/docs/en/sandboxes/#update-sandbox-last-activity) for long unattended work. Use [wall-clock TTL](https://www.daytona.io/docs/en/sandboxes/#wall-clock-ttl) for a hard deadline, and [auto-delete](https://www.daytona.io/docs/en/sandboxes/#auto-delete-interval) or [ephemeral sandboxes](https://www.daytona.io/docs/en/sandboxes/#ephemeral-sandboxes) where devboxes were shut down after use.
+
+Recreate egress rules deliberately. On Tier 3 and Tier 4, set `network_block_all`, `network_allow_list` (CIDRs), or `domain_allow_list` when [creating a sandbox](https://www.daytona.io/docs/en/network-limits/#create-sandboxes-with-network-restrictions). The options are mutually exclusive, and a sandbox-level policy also blocks [essential services](https://www.daytona.io/docs/en/network-limits/#essential-services) such as GitHub, npm, and PyPI unless you list them. On Tier 1 and Tier 2, organization restrictions apply and cannot be overridden. On Tier 3 and Tier 4 you can also [change a running sandbox's policy](https://www.daytona.io/docs/en/network-limits/#update-network-settings-while-a-sandbox-is-running) without restarting it. The change applies after a short delay rather than instantly, so set restrictions at creation when a workload must be restricted from its first request.
+
+Replace [tunnels](/docs/devboxes/tunnels) with [preview URLs](https://www.daytona.io/docs/en/preview/). The standard preview token authenticates every port of its sandbox and cannot be revoked; share access with [signed preview URLs](https://www.daytona.io/docs/en/preview/#signed-preview-url), which are bound to one port, expire, and can be revoked. A `public` sandbox serves previews without authentication. Runloop `wake_on_http` has no documented Daytona equivalent; start the sandbox from your application before routing traffic to it.
+
+Runloop [account secrets](/docs/devboxes/configuration/account-secrets) arrive as plaintext environment variables. Daytona [secrets](https://www.daytona.io/docs/en/secrets/) place an opaque placeholder in the environment and substitute the real value only in outbound HTTPS request headers, restricted to the secret's host allowlist when one is set, which is closer to [Agent Gateways](/docs/devboxes/agent-gateways). Request bodies, query strings, plain HTTP, and transformed values such as Basic Auth encodings are not substituted; pass `env_vars` where code needs the literal value. [MCP Hub](/docs/devboxes/mcp-hub) has no managed Daytona equivalent: header-authenticated MCP servers can use secrets with a host allowlist, and tool allowlists move into your application.
+
+[Mounts](/docs/devboxes/mounts/overview) become provisioning steps: clone code with the [Git API](https://www.daytona.io/docs/en/git-operations/), upload inline files with `fs.upload_file()`, and replace storage objects with [volumes](https://www.daytona.io/docs/en/volumes/) or [external storage mounts](https://www.daytona.io/docs/en/mount-external-storage/). Volumes are FUSE mounts that outlive sandboxes but are slower than the local filesystem and unsuitable for database files. [Agent mounts](/docs/devboxes/mounts/agent-mounts) have no Daytona registry; preinstall agents in a snapshot.
+
+**Validate:** Compare exit codes, stdout/stderr bytes, binary and UTF-8 files, modes, symlinks, and representative tasks. Check session context, `exit` handling, cancellation, background processes, auto-stop during long tasks, and both sides of each network rule, including anonymous preview requests.
+
+## Axons to coordination and event infrastructure
+
+There is no documented like-for-like Daytona substitute for [Axons](/docs/axons/overview). A sandbox does not supply durable event ordering, replay, subscriptions, or transactional [Axon SQL](/docs/axons/sql). Choose an append-only journal and your own SQL database; use sandboxes as workers and design durable dispatch separately.
+
+Inventory event cursors, SQL schemas, constraints, atomic batches, turn serialization, and [Broker](/docs/axons/broker) wake-up behavior. Persist accepted work before dispatch, deduplicate side effects, and reconcile pending work after worker failure. Replace Broker delivery explicitly: start the stopped sandbox from your dispatcher when work arrives, let auto-stop handle idleness, and use Daytona [webhooks](https://www.daytona.io/docs/en/webhooks/) such as `sandbox.state.updated` to track state. For the final export, freeze publishes and SQL writes and drain or record Broker work. Preserve event sequence and payloads, page every SQL table under its query limit, and verify row counts and content hashes before enabling the target writer. Runloop events and SQL do not share a documented atomic export boundary. Follow the provider-neutral [Axon export procedure](/docs/transitions/runloop-to-tensorlake#axons-to-coordination-and-event-infrastructure), including event pagination and SQL limit checks, and rehearse it on a disposable Axon.
+
+**Validate:** Disconnect and replay ordered events, retry delivery, crash after accepting work, cancel turns, submit concurrent messages, and fail a SQL batch. Require no lost accepted work, no duplicate external effects, and atomic rollback.
+
+## Blueprints to snapshots
+
+Record each [blueprint](/docs/devboxes/blueprints) base, dependencies, files, setup, user, and working directory. Translate it into a Daytona [snapshot](https://www.daytona.io/docs/en/snapshots/#create-snapshots) built from a registry image, a Dockerfile, or the [declarative builder](https://www.daytona.io/docs/en/declarative-builder/), and map each blueprint ID to its snapshot name. Build images for `linux/amd64`. Declarative and Dockerfile builds support container and GPU sandboxes only; for Linux VM sandboxes, create the snapshot from a registry image or from a configured sandbox.
+
+Keep runtime secrets out of images. Reapply resources, network policy, labels, volumes, secrets, and lifecycle intervals when creating sandboxes. Snapshots become inactive after two weeks without use and must be [activated](https://www.daytona.io/docs/en/snapshots/#activate-snapshots) before new sandboxes can start from them; account for this in recovery plans.
+
+**Validate:** In a fresh sandbox, compare packages, architecture, paths, effective user, permissions, startup behavior, and agent versions. Confirm runtime secrets are absent from the snapshot.
+
+## Snapshots to sandbox snapshots
+
+Direct Runloop snapshot import into Daytona is unverified. Drain writers, flush filesystem and database writes, record the final event cursor and pending work, then complete a [Runloop disk snapshot](/docs/devboxes/snapshots), restore it into a temporary devbox, and export application directories and a consistent database backup. Preserve checksums, modes, symlinks, and ownership. Verify that no accepted writes occurred after that boundary; reconcile any final delta before enabling the target writer. Transfer through authenticated file workflows and handle mounted and external data separately.
+
+Restore into the rebuilt Daytona environment and verify application invariants before calling `sandbox.create_snapshot()`. Container sandboxes capture the filesystem only; Linux VM sandboxes can also capture memory. Snapshots persist after their source sandbox is deleted. Store the snapshot name, event cursor, and pending-work metadata outside the sandbox, and keep data that must outlive every sandbox in [volumes](https://www.daytona.io/docs/en/volumes/) or external storage. See [persistence](https://www.daytona.io/docs/en/persistence/).
+
+**Validate:** Restore after source deletion, compare manifests and database integrity, and restart required processes. Test capture failure, snapshot reactivation, and retention. A snapshot does not make external database writes or side effects atomic.
+
+## Benchmarks to Harbor
+
+The Runloop Benchmark product has been discontinued. The recommended migration path is to switch to the [Harbor](https://docs.harborframework.com) runner and select Daytona as the sandbox provider: install `harbor[daytona]`, set `DAYTONA_API_KEY`, and run `harbor run --env daytona`. Harbor's [pre-integrated sandboxes](https://docs.harborframework.com/core-concepts/sandboxes/pre-integrated-sandboxes) page has more details and lists alternative providers.
+
+Treat this as a task and scoring port. Map each retained scenario's instruction, fixtures, environment, timeout, and scorer to a [Harbor task](https://docs.harborframework.com/core-concepts/tasks/overview) and verifier, keep a versioned mapping from Runloop scenario and scorer IDs, and compare fixed passing, failing, and partial-credit fixtures before aggregate scores. Archive historical Runloop results separately unless a supported import path is confirmed.
+
+## Cutover and recovery
+
+Run the [validation matrix](/docs/transitions/runloop-to-daytona-validation) for every primitive in use. Require explained manifest differences, required access checks passing, durable event and SQL recovery, scoring agreement, and recovery within agreed objectives. Record SDK versions, owners, evidence, and accepted exceptions.
+
+Rehearse a final drain, consistent export, target restore, routing change, and acceptance run. To roll back after target writes, stop target writers, transfer new state and pending work back, reconcile external effects, then restore source routing. Republished Axon events receive new sequence numbers; map IDs and cursors using stable application-level identifiers. Without a tested reverse-transfer path, recovery is limited to the pre-cutover state with an accepted data-loss window.
+
+Runloop is winding down its services. Transition support for existing customers continues through November 13, 2026 at 11:59 PM PT; contact [Runloop support](mailto:support@runloop.ai) for help.

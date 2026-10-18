@@ -1,0 +1,55 @@
+---
+title: "Runloop to Daytona validation plan"
+description: "Executable SDK checks and workload acceptance tests for a Daytona transition"
+---
+
+<Warning>
+  The [comparison starter](https://github.com/runloopai/runloop-examples/blob/main/transitions/runloop-to-daytona/compare_core_public.py) implements the bounded checks in the "Run the SDK comparison" section. It does not certify complete migration equivalence. Axons, production networking, and evaluation acceptance require your chosen application infrastructure.
+</Warning>
+
+## Run the SDK comparison
+
+Use Python 3.10 or later and isolated projects. Set `RUNLOOP_API_KEY` and `DAYTONA_API_KEY` in your shell; never commit them. The script creates billable resources and deletes only the devboxes, sandboxes, and snapshots it creates.
+
+```sh
+git clone https://github.com/runloopai/runloop-examples.git
+cd runloop-examples/transitions/runloop-to-daytona
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+python compare_core_public.py --extended --output transition-results_private.json
+```
+
+The default run compares successful and nonzero command exits, stdout/stderr, output without a trailing newline, and UTF-8 file round trips. It also records that `process.exec()` returns stderr inside its single result. `--extended` adds binary and 1 MiB fixtures, permissions and symlinks, sandboxes created with outbound block-all and a domain allow list, a transfer from Runloop to Daytona and back, disk persistence and process restart across Runloop suspend/resume and Daytona stop/start, and snapshot restoration on both services.
+
+The JSON records package versions, resource IDs, fixture hash, timestamps, assertions, errors, and cleanup. Exit `0` means all implemented assertions and cleanup passed; `1` means a mismatch or cleanup failure; `2` means a probe error. Exit 2 can also include cleanup failures; inspect `cleanup` on every nonzero exit. Keep the raw report private and inspect failed cleanup for resources requiring removal. The network checks need a Tier 3 or Tier 4 Daytona organization.
+
+## Recorded live run
+
+On October 18, 2026 (PT), the extended probe passed **17/17 assertions** with `runloop-api-client` **2.0.0** and `daytona` **0.225.0**. All eight devbox, sandbox, and snapshot cleanup actions succeeded. Separate injected failures after Daytona sandbox creation and during a Daytona snapshot capture returned exit 2 and cleaned up all registered resources. See the [sanitized live-run summary](https://github.com/runloopai/runloop-examples/blob/main/transitions/runloop-to-daytona/validation-summary.json) for case results and timestamps.
+
+The recorded run covers small synthetic fixtures on default Runloop provisioning and Daytona's default container snapshot, `daytonaio/sandbox:0.8.0`. It is evidence for these specific calls and versions, not a production workload, full disk import, Linux VM sandbox behavior, Axon replacement, or recovery-time guarantee.
+
+## Workload acceptance matrix
+
+The filenames in this matrix are suggested names for additional workload checks; those separate scripts are not supplied by the starter. Use the same input fixture on both providers. Record SDK and CLI versions, base snapshot, effective CPU/memory/disk, timestamps, owner, raw output, and exceptions. Normalize only provider IDs and timestamps; preserve exit status, bytes, modes, event order, and scoring values.
+
+| Suggested test | Direct comparison | Required assertions |
+| - | - | - |
+| `compare_commands.py` | Runloop `devbox.cmd.exec()` versus Daytona session commands and `process.exec()` | Success, nonzero exit, stdout/stderr separation, final-newline handling, Unicode, binary and large transfers; check bytes, modes, ownership, and symlinks. Extend beyond the starter's small fixtures. |
+| `compare_sessions.py` | Runloop named shells versus Daytona sessions or PTY | Directory and environment continuity, concurrent command ordering, `exit` handling, cancellation, reconnect, background work, and output framing. |
+| `compare_lifecycle.py` | Runloop suspend/resume and idle policy versus Daytona stop/start, auto-stop, archive, and wall-clock TTL | Disk persistence and process restart on both. Check auto-stop during long tasks without toolbox activity, archive restoration, deadlines, and unexpected termination. If you adopt Linux VM sandboxes, check memory and process survival across pause/resume and forks. |
+| `compare_network.py` | Runloop network policies and tunnels versus Daytona network limits and preview URLs | Allowed and blocked outbound destinations set at creation and updated at runtime, essential-service access, authorized and anonymous preview requests, signed URL expiry and revocation, and tenant separation. The starter tests outbound policies set at creation only. |
+| `compare_secrets.py` | Runloop account secrets, Agent Gateways, and MCP Hub versus Daytona secrets | Header substitution for allowed hosts, placeholders sent to other hosts, body and query-string usage, and absence of plaintext values from the environment, files, and logs. |
+| `compare_environment.py` | Runloop blueprint versus Daytona snapshot | Dependencies, architecture, effective user, paths, permissions, startup, kernel-dependent tools, reactivation after inactivity, and absence of runtime secrets. |
+| `compare_snapshot.py` | Runloop disk snapshot versus Daytona snapshot from a sandbox | Manifests and database integrity after source deletion, process behavior, external data, snapshot retention, capture failure, and recovery within objectives. The starter compares native snapshots, not cross-provider disk import. |
+| `compare_axon.py` | Runloop event/SQL/Broker APIs versus your journal, database, and workers | Ordered replay, subscriber cursors, concurrent turns, cancellation, retry deduplication, crash recovery, SQL constraints, and atomic failed batches. A missing target component fails acceptance. |
+| `compare_evaluations.py` | Legacy results versus Harbor with `--env daytona` | Fixed passing/failing/timeout cases, per-scorer values, weights, aggregate, error classification, and artifact retention. |
+
+## Evidence and cutover gate
+
+For every required check, record owner, run date, versions, fixture hash, artifact location, result, and approved exception. Require representative workload success, access-policy enforcement, durable state and event recovery, evaluation agreement, and recovery within agreed objectives. Demonstrate reverse transfer for lossless rollback; otherwise document the accepted data-loss window and test recovery to the frozen source state.
+
+For deterministic scores, require exact equality unless a tolerance is declared before execution. For stochastic tasks, fix model and sampling settings, use a declared sample count and acceptance threshold, and do not infer equivalence from one run.
+
+Check current method signatures in the [Runloop SDK documentation](/docs/tools/sdks) and Daytona's [sandbox](https://www.daytona.io/docs/en/sandboxes/), [process](https://www.daytona.io/docs/en/process-code-execution/), [file system](https://www.daytona.io/docs/en/file-system-operations/), [network](https://www.daytona.io/docs/en/network-limits/), and [snapshot](https://www.daytona.io/docs/en/snapshots/) guides before extending the starter.
