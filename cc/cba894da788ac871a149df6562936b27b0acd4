@@ -1,0 +1,68 @@
+transitions/runloop-to-daytona/README.md
+  s_af2e5bd4fb403f::t_a5abe91f3eb263 21
+  s_af2e5bd4fb403f::t_f84e7172448561 41
+  s_af2e5bd4fb403f::t_4cc9fadb85807c 23
+  s_af2e5bd4fb403f::t_3f63ba04ffd0fa 1-20,22,24-36,38,40
+  s_af2e5bd4fb403f::t_99d77007d1fd05 37
+  s_af2e5bd4fb403f::t_ca222d1e597906 39
+transitions/runloop-to-daytona/docs/runloop-to-daytona.mdx
+  s_af2e5bd4fb403f::t_a0f1a58bf18e8e 50
+  s_af2e5bd4fb403f::t_fae8a853dbf9f6 1-9,11-43,45-49,51-65,67-75,77-92
+  s_af2e5bd4fb403f::t_b09fb399ae8458 66
+  s_af2e5bd4fb403f::t_b52f59ae6a2144 44
+  s_af2e5bd4fb403f::t_b595317a473f88 10
+  s_af2e5bd4fb403f::t_4b98bcf6507aa5 76
+transitions/runloop-to-daytona/.gitignore
+  s_af2e5bd4fb403f::t_2541d3cae8011f 1-5
+transitions/runloop-to-daytona/compare_core_public.py
+  s_af2e5bd4fb403f::t_5aaf0412b9fabb 19
+  s_af2e5bd4fb403f::t_7860efa62928dd 150-151,153,158
+  s_af2e5bd4fb403f::t_c22c1cc3196e4f 106-112,115-116
+  s_af2e5bd4fb403f::t_096b2c4d91c002 231,233,235,237-246,249,258-259
+  s_af2e5bd4fb403f::t_d8ef55160f0155 341
+  s_af2e5bd4fb403f::t_d858fbf0e3dcce 199
+  s_af2e5bd4fb403f::t_bb1df63b3a2923 251
+  s_af2e5bd4fb403f::t_b0f615962b0e20 285-286,288-293,296-299,302,306
+  s_af2e5bd4fb403f::t_21eaf34869e956 152,154-156,161-164,169
+  s_af2e5bd4fb403f::t_2247f9bbb8ae33 219
+  s_af2e5bd4fb403f::t_156ef39e7bc3f9 33
+  s_af2e5bd4fb403f::t_97a957902270c1 30
+  s_af2e5bd4fb403f::t_a8001a4ebf76db 128,130-134
+  s_af2e5bd4fb403f::t_a678034506ae5d 1-18,20-29,31-32,34-105,113-114,117-124,126-127,129,135-149,157,159-160,165-168,171-198,200-218,220-230,232,234,236,247-248,250,252-257,260-284,287,294-295,300-301,303-305,307-340,342-370,372-423
+  s_af2e5bd4fb403f::t_b65260b66e1ff3 371
+  s_af2e5bd4fb403f::t_13f432ffae422a 125
+  s_af2e5bd4fb403f::t_5c258f1640541c 170
+transitions/runloop-to-daytona/docs/runloop-to-daytona-validation.mdx
+  s_af2e5bd4fb403f::t_488ab68fc39a34 1-28,30-44,46-55
+  s_af2e5bd4fb403f::t_cb5d43a08f6cb1 29
+  s_af2e5bd4fb403f::t_cee0e8433610e1 45
+transitions/runloop-to-daytona/requirements.txt
+  s_af2e5bd4fb403f::t_21050b2ef0fde5 1-2
+transitions/runloop-to-daytona/validation-summary.json
+  s_b0bf8baad51033::t_768c0fadc4a5d2 1-5,8-128
+  s_b0bf8baad51033::t_0c65b606d1f7ec 6-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cccba894da788ac871a149df6562936b27b0acd4",
+  "prompts": {},
+  "sessions": {
+    "s_af2e5bd4fb403f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_eca04700effe5ce51CcqrDfpuI",
+        "model": "unknown"
+      },
+      "human_author": "Mislav Ivanda <mislavivanda454@gmail.com>"
+    },
+    "s_b0bf8baad51033": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_eca04700effe5ce51CcqrDfpuI",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Mislav Ivanda <mislavivanda454@gmail.com>"
+    }
+  }
+}
